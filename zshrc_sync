@@ -1,0 +1,35 @@
+# usage/install: (in README.md) copy the file to your .zshrc 
+# functionality: sync .zshrc file between Mac devices via iCloud.
+icloud='~/Library/Mobile Documents/com~apple~CloudDocs/'
+
+syncZSHRCfile() {
+    if diff -q ~/.zshrc $icloud/mac-zsh/.zshrc; then
+        echo "both .ZSHRC file up to date. See below:"
+        diff -s ~/.zshrc $icloud/mac-zsh/.zshrc
+      else
+        diff ~/.zshrc $icloud/mac-zsh/.zshrc
+        if [ ~/.zshrc -nt $icloud/mac-zsh/.zshrc ]; then
+          read -q confirmUploadZshrc\?"Local .ZSHRC file is newer, upload? (y/n [n])"
+          echo ""
+          if [ $confirmUploadZshrc = 'y' ]; then
+            rm $icloud/mac-zsh/.zshrc_backup 1>/dev/null
+            mv $icloud/mac-zsh/.zshrc $icloud/mac-zsh/.zshrc_backup 1>/dev/null
+            cp ~/.zshrc $icloud/mac-zsh/.zshrc 1>/dev/null
+            echo "SUCCESS: uploaded local .ZSHRC file"
+          fi
+        else
+          read -q confirmDownloadZshrc\?"server .ZSHRC file (iCloud Drive) is newer, download? (y/n [n])"
+          echo $confirmDownloadZshrc
+          if [ $confirmDownloadZshrc = "y" ]; then
+            rm ~/.zshrc_backup 1>/dev/null
+            mv ~/.zshrc ~/.zshrc_backup 1>/dev/null
+            cp $icloud/mac-zsh/.zshrc ~/.zshrc 1>/dev/null
+            echo "SUCCESS: downloaded .ZSHRC file from icloud"
+          else
+            echo "CANCELED."
+          fi
+        fi
+      fi
+}
+
+syncZSHRCfile
